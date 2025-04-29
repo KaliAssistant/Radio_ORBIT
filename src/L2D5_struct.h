@@ -86,7 +86,7 @@ extern "C" {
  *  ----------------------------------------------------
  *  |   HELLO_PKT_NB   | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 |
  *  ----------------------------------------------------
- *  |   HELLO_PKT_RM   | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1 |  // TODO : MULTICAST OR UNICAST? (UNICAST, but MULTICAST...)
+ *  |   HELLO_PKT_RM   | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1 |  // NOTE: UNICAST (encrypted per neighbor), but all neighbors receive a copy (multicast-like)
  *  ----------------------------------------------------
  *  |   TCP_DATA_DC    | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 |
  *  ----------------------------------------------------
