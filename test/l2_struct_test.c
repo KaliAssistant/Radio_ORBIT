@@ -18,29 +18,22 @@
 #include <sys/random.h>
 #include <zlib.h>
 
-unsigned int crc32b(unsigned char *message) {
-   int i, j;
-   unsigned int byte, crc, mask;
-
-   i = 0;
-   crc = 0xFFFFFFFF;
-   while (message[i] != 0) {
-      byte = message[i];            // Get next byte.
-      crc = crc ^ byte;
-      for (j = 7; j >= 0; j--) {    // Do eight times.
-         mask = -(crc & 1);
-         crc = (crc >> 1) ^ (0xEDB88320 & mask);
-      }
-      i = i + 1;
-   }
-   return ~crc;
-}
 
 uint8_t* gen_rdm_bytestream(size_t const num_bytes) {
     uint8_t * const stream = malloc(num_bytes);
-    getrandom(stream, num_bytes, 0);
+    if (stream == NULL) {
+        perror("malloc failed");
+        exit(EXIT_FAILURE);
+    }
+    ssize_t ret = getrandom(stream, num_bytes, 0);
+    if (ret != (ssize_t)num_bytes) {
+        perror("getrandom failed");
+        free(stream);
+        exit(EXIT_FAILURE);
+    }
     return stream;
 }
+
 
 
 void displayStruct() {
@@ -63,7 +56,7 @@ int main() {
   uint8_t* payload_test = gen_rdm_bytestream(216);
   memcpy(l2test.Payload, payload_test, 216);
   //l2test.Payload = payload_test;
-  uint32_t checksum = crc32b(l2test.Payload);
+  uint32_t checksum = crc32(0, l2test.Payload, 216);
 
   l2test.ChkSum[0] = (uint8_t)((checksum >> 24) & 0xFF);
   l2test.ChkSum[1] = (uint8_t)((checksum >> 16) & 0xFF);
@@ -92,7 +85,7 @@ int main() {
   printf("+--------------------------------------------------------------------+\n");
   int buffer_count=0;
 
-  for(Byte h=0x0; h<0xE; h++) {
+  for(uint8_t h=0x0; h<0xE; h++) {
     printf("+ %X|", h);
     for(int i=0; i<16;i++) {
       char dec_str_b = ' ';
