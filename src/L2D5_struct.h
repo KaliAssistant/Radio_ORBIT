@@ -15,7 +15,7 @@
  *   - Modifying the structure will break compatibility between devices.
  *   - Always ensure sizeof(L2D5Frame_t) == 216 bytes.
  *   - Always ensure sizeof(L2D5Frame_Encrypted_t) == 216 bytes.
- *   - Always ensure sizeof(L2D5Routing_HelloPkt_t) == 172 bytes.
+ *   - Always ensure sizeof(L2D5Routing_HelloPkt_t) == 176 bytes.
  *   - Always ensure sizeof(L2D5Routing_NeighborTable_t) == 94 bytes.
  *   - Always ensure sizeof(L2D5Routing_RemoteTable_t) == 108 bytes.
  */
@@ -49,22 +49,22 @@ extern "C" {
  *
  * | Layer              | TAG | KeyHint | FLAG | Source Address | Destination Address | TTL | Payload |
  * ----------------------------------------------------------------------------------------------------
- * | Length(Bytes)      |  1  |     8   |   1  |      16        |         16          |  2  |   172   |
+ * | Length(Bytes)      |  1  |     4   |   1  |      16        |         16          |  2  |   176   |
  * ----------------------------------------------------------------------------------------------------
  * | L2.5 Non-Encrypted | <-- |xxxxxxxxx|--                 216 Bytes                             --> |
  * ----------------------------------------------------------------------------------------------------
- * | L2.5 Encryped      | <-- 10+206 Bytes --> | #################### ENCRYPTED ##################### | 
+ * | L2.5 Encryped      | <-- 6+210  Bytes --> | #################### ENCRYPTED ##################### | 
  *
  *
  *
  *  +-------------------------- L2.5 Frame ------------------------------+
  *  +    00  01  02  03  04  05  06  07  08  09  0A  0B  0C  0D  0E  0F  +
  *  +--------------------------------------------------------------------+
- *  + 0|[*T][---------- Key Hint ----------][*F][-=-=-=-=- 16 Bytes src |+
- *  + 1| address =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-][-=-=-=-=- 16 Bytes dst |+
- *  + 2| address =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-][-=TTL-][-=172B payload |+
+ *  + 0|[*T][-4byteKeyHint-][*F][-------------------- 16 bytes src addr |+
+ *  + 1| ----------------------][-------------------- 16 bytes dst addr |+
+ *  + 2| ----------------------][-TTL -][------------ 176 bytes payload |+
  *  + ~| ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |+
- *  + D| -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=] XX  XX  XX  XX  XX  XX  XX  XX |+
+ *  + D| ------------------------------] XX  XX  XX  XX  XX  XX  XX  XX |+
  *  +--------------------------------------------------------------------+
  *
  *  *T: TAG
@@ -122,9 +122,9 @@ extern "C" {
  *
  *  | Packet          | NodeSrcAddr | PublicKey | TimeStamp | SEQ | NodesLimit |        Padding       |
  *  ---------------------------------------------------------------------------------------------------
- *  | Length(Bytes)   |     16      |     32    |     4     |  2  |     2      |          116         |
+ *  | Length(Bytes)   |     16      |     32    |     4     |  2  |     2      |          120         |
  *  ---------------------------------------------------------------------------------------------------
- *  | Hello Packet    | <--                 56+116 Bytes                   --> |@@@@ ZERO Padding @@@@|
+ *  | Hello Packet    | <--                 56+120 Bytes                   --> |@@@@ ZERO Padding @@@@|
  *
  *
  *
@@ -136,7 +136,7 @@ extern "C" {
  *  + 2| key ----------------------------------------------------------]|+
  *  + 3|[-  TimeStamp- ][- SEQ-][*NLIM*][--------- 116 Bytes padding -- |+
  *  + ~| ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |+
- *  + A| ----------------------------------------------] XX  XX  XX  XX |+
+ *  + A| --------------------------------------------------------------]|+
  *  +--------------------------------------------------------------------+
  *
  *  *NLIM*: Nodes Limit
@@ -242,12 +242,12 @@ static inline L2D5FLAG_NUL_t L2D5FLAG_GET_NUL(uint8_t _aByte) {
 typedef struct {
   /* 216 Bytes */
   uint8_t TAG;                        // L2.5: 0x00
-  uint8_t KeyHint[8];                 // L2.5: 0x01-0x08
-  uint8_t FLAG;                       // L2.5: 0x09
-  uint8_t SrcAddress[16];             // L2.5: 0x0A-0x19
-  uint8_t DstAddress[16];             // L2.5: 0x1A-0x29
-  uint8_t TTL[2];                     // L2.5: 0x2A-0x2B
-  uint8_t Payload[172];               // L2.5: 0x2C-0xD7
+  uint8_t KeyHint[4];                 // L2.5: 0x01-0x04
+  uint8_t FLAG;                       // L2.5: 0x05
+  uint8_t SrcAddress[16];             // L2.5: 0x06-0x15
+  uint8_t DstAddress[16];             // L2.5: 0x16-0x25
+  uint8_t TTL[2];                     // L2.5: 0x26-0x27
+  uint8_t Payload[176];               // L2.5: 0x28-0xD7
 } L2D5Frame_t;
 
 
@@ -255,21 +255,21 @@ typedef struct {
 typedef struct {
   /* 216 Bytes */
   uint8_t TAG;                        // L2.5: 0x00
-  uint8_t KeyHint[8];                 // L2.5: 0x01-0x08
-  uint8_t FLAG;                       // L2.5: 0x09
-  uint8_t EncryptedPayload[206];      // L2.5: 0x0A-0xD7
+  uint8_t KeyHint[4];                 // L2.5: 0x01-0x04
+  uint8_t FLAG;                       // L2.5: 0x05
+  uint8_t EncryptedPayload[210];      // L2.5: 0x06-0xD7
 } L2D5Frame_Encrypted_t;
 
 
-/* L2.5 Routing HelloPacket definition (must be 172 bytes with padding) */
+/* L2.5 Routing HelloPacket definition (must be 176 bytes with padding) */
 typedef struct {
-  /* 172 Bytes */
+  /* 176 Bytes */
   uint8_t NodeSrcAddr[16];            // HelloPacket: 0x00-0x0F
   uint8_t PublicKey[32];              // HelloPacket: 0x10-0x2F
   uint8_t TimeStamp[4];               // HelloPacket: 0x30-0x33
   uint8_t SEQ[2];                     // HelloPacket: 0x34-0x35
   uint8_t NodesLimit[2];              // HelloPacket: 0x36-0x37
-  uint8_t Padding[116];               // HelloPacket: 0x38-0xAB
+  uint8_t Padding[120];               // HelloPacket: 0x38-0xAF
 } L2D5Routing_HelloPkt_t;
 
 
@@ -278,9 +278,9 @@ typedef struct {
   uint8_t NodeAddr[16];
   uint8_t PublicKey[32];
   uint8_t SharedKey[32];
-  uint16_t NodesLimit;
-  int last_rssi;
-  uint64_t last_seen_time;
+  uint8_t last_seen_time[8];
+  uint8_t last_rssi[4];
+  uint8_t NodesLimit[2];
 } L2D5Routing_NeighborTable_t;
 
 
@@ -290,18 +290,18 @@ typedef struct {
   uint8_t PublicKey[32];
   uint8_t SharedKey[32];
   uint8_t NextHopAddr[16];
-  uint16_t NodesLimit;
-  uint16_t hops;
-  uint64_t last_seen_time;
+  uint8_t last_seen_time[8];
+  uint8_t NodesLimit[2];
+  uint8_t hops[2];
 } L2D5Routing_RemoteTable_t;
 
 
 
 STATIC_ASSERT(sizeof(L2D5Frame_t) == 216, L2D5Frame_t_must_be_216bytes);
 STATIC_ASSERT(sizeof(L2D5Frame_Encrypted_t) == 216, L2D5Frame_Encrypted_t_must_be_216bytes);
-STATIC_ASSERT(sizeof(L2D5Routing_HelloPkt_t) == 172, L2D5Routing_HelloPkt_t_must_be_172bytes);
+STATIC_ASSERT(sizeof(L2D5Routing_HelloPkt_t) == 176, L2D5Routing_HelloPkt_t_must_be_176bytes);
 STATIC_ASSERT(sizeof(L2D5Routing_NeighborTable_t) == 94, L2D5Routing_NeighborTable_t_must_be_94bytes);
-STATIC_ASSERT(sizeof(L2D5Routing_HelloPkt_t) == 108, L2D5Routing_RemoteTable_t_must_be_108bytes);
+STATIC_ASSERT(sizeof(L2D5Routing_RemoteTable_t) == 108, L2D5Routing_RemoteTable_t_must_be_108bytes);
 
 
 
