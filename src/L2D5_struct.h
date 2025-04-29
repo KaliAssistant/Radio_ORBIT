@@ -13,10 +13,13 @@
  *   - DO NOT MODIFY THIS FILE MANUALLY.
  *   - Any changes must be approved and reviewed carefully.
  *   - Modifying the structure will break compatibility between devices.
- *   - Always ensure sizeof(L2D5Frame) == 216 bytes.
- *   - Always ensure sizeof(L2D5Frame_Encrypted) == 216 bytes.
- *
+ *   - Always ensure sizeof(L2D5Frame_t) == 216 bytes.
+ *   - Always ensure sizeof(L2D5Frame_Encrypted_t) == 216 bytes.
+ *   - Always ensure sizeof(L2D5Routing_HelloPkt_t) == 172 bytes.
+ *   - Always ensure sizeof(L2D5Routing_NeighborTable_t) == 94 bytes.
+ *   - Always ensure sizeof(L2D5Routing_RemoteTable_t) == 108 bytes.
  */
+
 
 #ifndef L2D5_STRUCT_H
 #define L2D5_STRUCT_H
@@ -94,7 +97,7 @@ extern "C" {
 /*
  *  L2.5 FLAG definition
  *
- *  |====================== FLAG ======================
+ *  |====================== FLAG =====================|
  *  ---------------------------------------------------
  *  | NAME |       PRI       |  ERR FLAG  | NULL FLAG |
  *  ---------------------------------------------------
@@ -113,30 +116,97 @@ extern "C" {
  *  | ERR_WARN | 1 | 1 |
  */
 
+
+/*
+ *  L2.5 Routing Hello packet definition
+ *
+ *  | Packet          | NodeSrcAddr | PublicKey | TimeStamp | SEQ | NodesLimit |        Padding       |
+ *  ---------------------------------------------------------------------------------------------------
+ *  | Length(Bytes)   |     16      |     32    |     4     |  2  |     2      |          116         |
+ *  ---------------------------------------------------------------------------------------------------
+ *  | Hello Packet    | <--                 56+116 Bytes                   --> |@@@@ ZERO Padding @@@@|
+ *
+ *
+ *
+ *  +------------------------- Hello Packet -----------------------------+
+ *  +    00  01  02  03  04  05  06  07  08  09  0A  0B  0C  0D  0E  0F  +
+ *  +--------------------------------------------------------------------+
+ *  + 0|[--------------- 16 Bytes Node Source Address -----------------]|+
+ *  + 1|[---------------------------------------------- 32 Bytes Public |+
+ *  + 2| key ----------------------------------------------------------]|+
+ *  + 3|[-  TimeStamp- ][- SEQ-][*NLIM*][--------- 116 Bytes padding -- |+
+ *  + ~| ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ |+
+ *  + A| ----------------------------------------------] XX  XX  XX  XX |+
+ *  +--------------------------------------------------------------------+
+ *
+ *  *NLIM*: Nodes Limit
+ */
+
+
+
+/*
+ *  L2.5 Routing Neighbor & Remote Table definition
+ *
+ *  |================================================= Neighbor Table ===================================================|
+ *  ----------------------------------------------------------------------------------------------------------------------
+ *  |      NAME     | Node Address | Node PublicKey | Node SharedKey | Node hops Limit | Last seen RSSI | Last seen time |
+ *  ----------------------------------------------------------------------------------------------------------------------
+ *  | Length(Bytes) |      16      |        32      |        32      |        2        |        4       |        8       |
+ *  ----------------------------------------------------------------------------------------------------------------------
+ *  |   VarType     |  uint8_t*16  |   uint8_t*32   |   uint8_t*32   |     uint16_t    |      int32_t   |    uint64_t    |
+ *  ----------------------------------------------------------------------------------------------------------------------
+ *  |  Total Size   | <--                                      94 bytes                                              --> |      
+ *
+ *
+ *
+ *  |======================================================== Remote Table ===========================================================|
+ *  -----------------------------------------------------------------------------------------------------------------------------------
+ *  |     NAME      | Node Address | Node PublicKey | Node SharedKey | Next hop Address | Node hops Limit |   hops   | Last seen time |
+ *  -----------------------------------------------------------------------------------------------------------------------------------
+ *  | Length(Bytes) |      16      |       32       |       32       |        16        |         2       |     2    |       8        |
+ *  -----------------------------------------------------------------------------------------------------------------------------------
+ *  |   Var Type    |  uint8_t*16  |   uint8_t*32   |   uint8_t*32   |    uint8_t*16    |     uint16_t    | uint16_t |    uint64_t    |
+ *  -----------------------------------------------------------------------------------------------------------------------------------
+ *  |  Total Size   | <--                                             108 bytes                                                   --> |
+ *
+ */
+
+
+
 #define MAGIC_L2D5LAYER_TAGTYPE_HELLO_PKT_NB 0b01001000
 #define MAGIC_L2D5LAYER_TAGTYPE_HELLO_PKT_RM 0b11100011
-#define MAGIC_L2D5LAYER_TAGTYPE_TCP_DATA_DC 0b10010001
-#define MAGIC_L2D5LAYER_TAGTYPE_TCP_DATA_RM 0b10110001
+#define MAGIC_L2D5LAYER_TAGTYPE_TCP_DATA_DC  0b10010001
+#define MAGIC_L2D5LAYER_TAGTYPE_TCP_DATA_RM  0b10110001
+
+#define MAGIC_L2D5LAYER_FLAGTYPE_ERR_NML  0b00
+#define MAGIC_L2D5LAYER_FLAGTYPE_ERR_DBG  0b01
+#define MAGIC_L2D5LAYER_FLAGTYPE_ERR_ERR  0b10
+#define MAGIC_L2D5LAYER_FLAGTYPE_ERR_WARN 0b11
+
+#define MAGIC_L2D5LAYER_FLAGTYPE_NUL_A 0b00
+#define MAGIC_L2D5LAYER_FLAGTYPE_NUL_B 0b01
+#define MAGIC_L2D5LAYER_FLAGTYPE_NUL_C 0b10
+#define MAGIC_L2D5LAYER_FLAGTYPE_NUL_D 0b11
 
 typedef enum {
-  L2D5TAG_HELLO_PKT_NB = 0b01001000,
-  L2D5TAG_HELLO_PKT_RM = 0b11100011,
-  L2D5TAG_TCP_DATA_DC = 0b10010001,
-  L2D5TAG_TCP_DATA_RM = 0b10110001
+  L2D5TAG_HELLO_PKT_NB = MAGIC_L2D5LAYER_TAGTYPE_HELLO_PKT_NB,
+  L2D5TAG_HELLO_PKT_RM = MAGIC_L2D5LAYER_TAGTYPE_HELLO_PKT_RM,
+  L2D5TAG_TCP_DATA_DC = MAGIC_L2D5LAYER_TAGTYPE_TCP_DATA_DC,
+  L2D5TAG_TCP_DATA_RM = MAGIC_L2D5LAYER_TAGTYPE_TCP_DATA_RM
 } L2D5TAG_t;
 
 typedef enum {
-  L2D5FLAG_ERR_NML  = 0b00,
-  L2D5FLAG_ERR_DBG  = 0b01,
-  L2D5FLAG_ERR_ERR  = 0b10,
-  L2D5FLAG_ERR_WARN = 0b11
+  L2D5FLAG_ERR_NML  = MAGIC_L2D5LAYER_FLAGTYPE_ERR_NML,
+  L2D5FLAG_ERR_DBG  = MAGIC_L2D5LAYER_FLAGTYPE_ERR_DBG,
+  L2D5FLAG_ERR_ERR  = MAGIC_L2D5LAYER_FLAGTYPE_ERR_ERR,
+  L2D5FLAG_ERR_WARN = MAGIC_L2D5LAYER_FLAGTYPE_ERR_WARN
 } L2D5FLAG_ERR_t;
 
 typedef enum {
-  L2D5FLAG_NUL_A = 0b00,
-  L2D5FLAG_NUL_B = 0b01,
-  L2D5FLAG_NUL_C = 0b10,
-  L2D5FLAG_NUL_D = 0b11
+  L2D5FLAG_NUL_A = MAGIC_L2D5LAYER_FLAGTYPE_NUL_A,
+  L2D5FLAG_NUL_B = MAGIC_L2D5LAYER_FLAGTYPE_NUL_B,
+  L2D5FLAG_NUL_C = MAGIC_L2D5LAYER_FLAGTYPE_NUL_C,
+  L2D5FLAG_NUL_D = MAGIC_L2D5LAYER_FLAGTYPE_NUL_D
 } L2D5FLAG_NUL_t;
 
 
@@ -178,7 +248,7 @@ typedef struct {
   uint8_t DstAddress[16];             // L2.5: 0x1A-0x29
   uint8_t TTL[2];                     // L2.5: 0x2A-0x2B
   uint8_t Payload[172];               // L2.5: 0x2C-0xD7
-} L2D5Frame;
+} L2D5Frame_t;
 
 
 /* L2.5 Frame Encrypted structure definition (must be 216 bytes) */
@@ -188,11 +258,53 @@ typedef struct {
   uint8_t KeyHint[8];                 // L2.5: 0x01-0x08
   uint8_t FLAG;                       // L2.5: 0x09
   uint8_t EncryptedPayload[206];      // L2.5: 0x0A-0xD7
-} L2D5Frame_Encrypted;
+} L2D5Frame_Encrypted_t;
 
 
-STATIC_ASSERT(sizeof(L2D5Frame) == 216, L2D5Frame_must_be_216bytes);
-STATIC_ASSERT(sizeof(L2D5Frame_Encrypted) == 216, L2D5Frame_Encrypted_must_be_216bytes);
+/* L2.5 Routing HelloPacket definition (must be 172 bytes with padding) */
+typedef struct {
+  /* 172 Bytes */
+  uint8_t NodeSrcAddr[16];            // HelloPacket: 0x00-0x0F
+  uint8_t PublicKey[32];              // HelloPacket: 0x10-0x2F
+  uint8_t TimeStamp[4];               // HelloPacket: 0x30-0x33
+  uint8_t SEQ[2];                     // HelloPacket: 0x34-0x35
+  uint8_t NodesLimit[2];              // HelloPacket: 0x36-0x37
+  uint8_t Padding[116];               // HelloPacket: 0x38-0xAB
+} L2D5Routing_HelloPkt_t;
+
+
+/* L2.5 Routing Neighbor Table definition (must be 94 bytes) */
+typedef struct {
+  uint8_t NodeAddr[16];
+  uint8_t PublicKey[32];
+  uint8_t SharedKey[32];
+  uint16_t NodesLimit;
+  int last_rssi;
+  uint64_t last_seen_time;
+} L2D5Routing_NeighborTable_t;
+
+
+/* L2.5 Routing Remote Table definition (must be 108 bytes) */
+typedef struct {
+  uint8_t NodeAddr[16];
+  uint8_t PublicKey[32];
+  uint8_t SharedKey[32];
+  uint8_t NextHopAddr[16];
+  uint16_t NodesLimit;
+  uint16_t hops;
+  uint64_t last_seen_time;
+} L2D5Routing_RemoteTable_t;
+
+
+
+STATIC_ASSERT(sizeof(L2D5Frame_t) == 216, L2D5Frame_t_must_be_216bytes);
+STATIC_ASSERT(sizeof(L2D5Frame_Encrypted_t) == 216, L2D5Frame_Encrypted_t_must_be_216bytes);
+STATIC_ASSERT(sizeof(L2D5Routing_HelloPkt_t) == 172, L2D5Routing_HelloPkt_t_must_be_172bytes);
+STATIC_ASSERT(sizeof(L2D5Routing_NeighborTable_t) == 94, L2D5Routing_NeighborTable_t_must_be_94bytes);
+STATIC_ASSERT(sizeof(L2D5Routing_HelloPkt_t) == 108, L2D5Routing_RemoteTable_t_must_be_108bytes);
+
+
+
 
 #ifdef __cplusplus
 }
