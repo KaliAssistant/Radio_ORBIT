@@ -164,7 +164,7 @@ int main() {
   uint8_t l2d5Frame_buffer[216];
   memcpy(l2d5Frame_buffer, &l2d5test, 216);
 
-  printf("+----------------------- L2.5 Frame Non-Encrypted ------------------------ ASCII -------+\n");
+  //printf("+----------------------- L2.5 Frame Non-Encrypted ------------------------ ASCII -------+\n");
 
 
 
@@ -196,7 +196,7 @@ int main() {
   };
   #define ARRAY_LEN(x) (sizeof(x) / sizeof((x)[0]))
 
-  printHexTable256(l2d5Frame_buffer, sizeof(l2d5Frame_buffer), l2d5Frame_ansi_map, ARRAY_LEN(l2d5Frame_ansi_map), l2d5Frame_ansi_err_map, ARRAY_LEN(l2d5Frame_ansi_err_map));  
+  printColorHexTable256(l2d5Frame_buffer, sizeof(l2d5Frame_buffer), l2d5Frame_ansi_map, ARRAY_LEN(l2d5Frame_ansi_map), l2d5Frame_ansi_err_map, ARRAY_LEN(l2d5Frame_ansi_err_map), "L2.5 Frame Non-Encrypted");  
   printf("\e[1;32m ██ TAG\e[0m \e[0;33m ██ KEYHINT\e[0m \e[1;93m ██ FLAG\e[0m \e[0;36m ██ SRCADDR\e[0m \e[0;94m ██ DSTADDR\e[0m \e[1;35m ██ TTL\e[0m \e[0;95m ██ PAYLOAD\e[0m\n");
   printf("\n");
   printf("%s+@error\e[0m %s+@warning\e[0m %s+@debug\e[0m\n", ANSI_LEVEL_COLOR[3], ANSI_LEVEL_COLOR[2], ANSI_LEVEL_COLOR[1]);
