@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     uint8_t r, g, b;
     f01_2rgb888(rf, gf, bf, &r, &g, &b);
     uint8_t color_int = rgb2ansi256(r, g, b);
-    sprintf(color_code[i], "\e[38;5;%d;48;5;%dm", color_int, color_int);
+    sprintf(color_code[i], "\e[38;5;%dm", color_int);
   }
   for(int i=0; i<512; i++) {
       for(int j=0; j< 256; j++) {
