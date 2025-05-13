@@ -168,40 +168,45 @@ int main() {
 
 
 
-  ANSI_Color_Map_t l2d5Frame_ansi_map[] = {
-    {0x00, 0x00, ' ', ' ', "\e[1;32m"},
-    {0x01, 0x04, '[', ']', "\e[0;33m"},
-    {0x05, 0x05, ' ', ' ', "\e[1;93m"},
-    {0x06, 0x15, '[', ']', "\e[0;36m"},
-    {0x16, 0x25, '[', ']', "\e[0;94m"},
-    {0x26, 0x27, '[', ']', "\e[1;35m"},
-    {0x28, 0xD7, '[', ']', "\e[0;95m"}
-  };
 
-  ANSI_ErrTag_Map_t l2d5Frame_ansi_err_map[] = {
-    {0x72, 0x72, 0x1},
-    {0x81, 0x81, 0x2},
-    {0x82, 0x82, 0x1},
-    {0x90, 0x90, 0x3},
-    {0x91, 0x91, 0x2},
-    {0x92, 0x92, 0x1},
-    {0x93, 0x93, 0x0},
-    {0xA3, 0xA3, 0x3},
-    {0xB3, 0xB3, 0x2},
-    {0xC3, 0xC3, 0x1},
-    {0xB4, 0xB4, 0x2},
-    {0xC4, 0xC4, 0x1},
-    {0xC5, 0xC5, 0x1}
+  ANSIColorMap256_t l2d5Frame_ansi_map = {0};
+  ANSIErrTagMap256_t l2d5Frame_ansi_err_map = {0};
 
-  };
+  addr2AnsiColorMap256(&l2d5Frame_ansi_map, 0x00, 0x00, "\e[1;32m", 0x00, ' ', 0x00, ' ', 1);
+  addr2AnsiColorMap256(&l2d5Frame_ansi_map, 0x01, 0x04, "\e[0;33m", 0x01, '[', 0x04, ']', 1);
+  addr2AnsiColorMap256(&l2d5Frame_ansi_map, 0x05, 0x05, "\e[1;93m", 0x05, ' ', 0x05, ' ', 1);
+  addr2AnsiColorMap256(&l2d5Frame_ansi_map, 0x06, 0x15, "\e[0;36m", 0x06, '[', 0x15, ']', 1);
+  addr2AnsiColorMap256(&l2d5Frame_ansi_map, 0x16, 0x25, "\e[0;94m", 0x16, '[', 0x25, ']', 1);
+  addr2AnsiColorMap256(&l2d5Frame_ansi_map, 0x26, 0x27, "\e[1;35m", 0x26, '[', 0x27, ']', 1);
+  addr2AnsiColorMap256(&l2d5Frame_ansi_map, 0x28, 0xD7, "\e[0;95m", 0x28, '[', 0xD7, ']', 1);
+
+  
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0x72, 0x72, 0x1);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0x81, 0x81, 0x2);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0x82, 0x82, 0x1);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0x90, 0x90, 0x3);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0x91, 0x91, 0x2);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0x92, 0x92, 0x1);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0x93, 0x93, 0x0);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0xA3, 0xA3, 0x3);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0xB3, 0xB3, 0x2);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0xC3, 0xC3, 0x1);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0xB4, 0xB4, 0x2);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0xC4, 0xC4, 0x1);
+  addr2AnsiErrTag256(&l2d5Frame_ansi_err_map, 0xC5, 0xC5, 0x1);
+
   #define ARRAY_LEN(x) (sizeof(x) / sizeof((x)[0]))
-
-  printColorHexTable256(l2d5Frame_buffer, sizeof(l2d5Frame_buffer), l2d5Frame_ansi_map, ARRAY_LEN(l2d5Frame_ansi_map), l2d5Frame_ansi_err_map, ARRAY_LEN(l2d5Frame_ansi_err_map), "L2.5 Frame Non-Encrypted", "printHexTable version "PRINTHEXTABLE_VERSION"  by @KaliAssistant");  
+  char *output_str = printColorHexTable256(l2d5Frame_buffer, sizeof(l2d5Frame_buffer), &l2d5Frame_ansi_map, &l2d5Frame_ansi_err_map, "L2.5 Frame Non-Encrypted", "printHexTable version "PRINTHEXTABLE_VERSION"  by @KaliAssistant");
+  printf("%s", output_str);
   printf("\e[1;32m ██ TAG\e[0m \e[0;33m ██ KEYHINT\e[0m \e[1;93m ██ FLAG\e[0m \e[0;36m ██ SRCADDR\e[0m \e[0;94m ██ DSTADDR\e[0m \e[1;35m ██ TTL\e[0m \e[0;95m ██ PAYLOAD\e[0m\n");
   printf("\n");
   printf("%s+@error\e[0m %s+@warning\e[0m %s+@debug\e[0m\n", ANSI_LEVEL_COLOR[3], ANSI_LEVEL_COLOR[2], ANSI_LEVEL_COLOR[1]);
-  printHexTable256(l2d5Frame_buffer, sizeof(l2d5Frame_buffer), "", "");
+  //printHexTable256(l2d5Frame_buffer, sizeof(l2d5Frame_buffer), "", "");
    //print_hex("AES Key", key, 32);
   //print_hex("AES IV",  iv, 16);
+
+  free(output_str);
+  
+  printf("\nORBIT L2.5 Frame Struct Test Program. Using Random Payload (Non-Encrypted)\nAuthor: KaliAssistant <work.kaliassistant.github@gmail.com>\nURL:    https://github.com/KaliAssistant/Radio_ORBIT\n");
   return 0;
 }
